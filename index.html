@@ -139,27 +139,138 @@
                     <p class="sub-text">Every moment with you is magic</p>
                 </div>
 
-                <div class="gallery-track">
-                    <!-- Memory Card 1 -->
-                    <div class="memory-card" data-observe="memory-bloom">
-                        <div class="memory-img-box">
-                            <div class="image-placeholder soft-edge"></div>
+                <!-- Infinite scrolling carousel -->
+                <div class="gallery-carousel-wrapper">
+                    <div class="gallery-carousel" id="gallery-carousel">
+                        <!-- Card 1 -->
+                        <div class="gallery-card" data-caption="That first day we smiled..." onclick="openLightbox(this)">
+                            <div class="gallery-card-inner">
+                                <img src="image/gallery1.jpg" alt="Memory 1" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" class="gallery-img">
+                                <div class="gallery-placeholder" style="display:none">
+                                    <span>📷</span>
+                                    <p>gallery1.jpg</p>
+                                </div>
+                            </div>
                         </div>
-                        <p class="memory-caption">That first day we smiled at each other...</p>
+                        <!-- Card 2 -->
+                        <div class="gallery-card" data-caption="Lost in your beautiful eyes..." onclick="openLightbox(this)">
+                            <div class="gallery-card-inner">
+                                <img src="image/gallery2.jpg" alt="Memory 2" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" class="gallery-img">
+                                <div class="gallery-placeholder" style="display:none">
+                                    <span>📷</span>
+                                    <p>gallery2.jpg</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Card 3 -->
+                        <div class="gallery-card" data-caption="Adventures we shared together..." onclick="openLightbox(this)">
+                            <div class="gallery-card-inner">
+                                <img src="image/gallery3.jpg" alt="Memory 3" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" class="gallery-img">
+                                <div class="gallery-placeholder" style="display:none">
+                                    <span>📷</span>
+                                    <p>gallery3.jpg</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Card 4 -->
+                        <div class="gallery-card" data-caption="Every little moment with you..." onclick="openLightbox(this)">
+                            <div class="gallery-card-inner">
+                                <img src="image/gallery4.jpg" alt="Memory 4" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" class="gallery-img">
+                                <div class="gallery-placeholder" style="display:none">
+                                    <span>📷</span>
+                                    <p>gallery4.jpg</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Card 5 -->
+                        <div class="gallery-card" data-caption="Making memories every day..." onclick="openLightbox(this)">
+                            <div class="gallery-card-inner">
+                                <img src="image/gallery5.jpg" alt="Memory 5" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" class="gallery-img">
+                                <div class="gallery-placeholder" style="display:none">
+                                    <span>📷</span>
+                                    <p>gallery5.jpg</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Card 6 -->
+                        <div class="gallery-card" data-caption="Here's to many more smiles... ❤️" onclick="openLightbox(this)">
+                            <div class="gallery-card-inner">
+                                <img src="image/gallery6.jpg" alt="Memory 6" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" class="gallery-img">
+                                <div class="gallery-placeholder" style="display:none">
+                                    <span>📷</span>
+                                    <p>gallery6.jpg</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <!-- Memory Card 2 -->
-                    <div class="memory-card" data-observe="memory-bloom" style="transition-delay: 0.3s;">
-                        <div class="memory-img-box">
-                            <div class="image-placeholder soft-edge"></div>
-                        </div>
-                        <p class="memory-caption">Lost in the beauty of your eyes.</p>
+                </div>
+            </section>
+
+            <!-- LIGHTBOX MODAL -->
+            <div id="lightbox" class="lightbox-overlay" onclick="closeLightbox()">
+                <div class="lightbox-content" onclick="event.stopPropagation()">
+                    <button class="lightbox-close" onclick="closeLightbox()">×</button>
+                    <img id="lightbox-img" src="" alt="" class="lightbox-img">
+                    <p id="lightbox-caption" class="lightbox-caption"></p>
+                </div>
+            </div>
+
+            <!-- SECTION 5.5: Cinematic Scroll-Reveal Memories -->
+            <section id="memory-reveal-section" class="experience-section memory-reveal-section">
+                <div class="memory-reveal-header" data-observe="fade-in">
+                    <h3 class="script-title large">Moments I'll Never Forget</h3>
+                    <p class="sub-text">Memories that stay in the heart forever...</p>
+                </div>
+
+                <!-- Memory 1: Photo Left, Text Right -->
+                <div class="memory-reveal-row" data-memory-reveal="slide-left">
+                    <div class="memory-reveal-img-wrap">
+                        <img src="image/memory1.jpg" alt="Memory" class="memory-reveal-img"
+                            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                        <div class="memory-reveal-placeholder"><span>📷</span><p>memory1.jpg</p></div>
                     </div>
-                    <!-- Memory Card 3 -->
-                    <div class="memory-card" data-observe="memory-bloom" style="transition-delay: 0.6s;">
-                        <div class="memory-img-box">
-                            <div class="image-placeholder soft-edge"></div>
-                        </div>
-                        <p class="memory-caption">To countless more adventures together.</p>
+                    <div class="memory-reveal-text">
+                        <span class="memory-number">01</span>
+                        <p class="memory-quote">"The first time I saw your smile, I knew the world had just become a little more beautiful."</p>
+                    </div>
+                </div>
+
+                <!-- Memory 2: Photo Right, Text Left -->
+                <div class="memory-reveal-row reverse" data-memory-reveal="slide-right">
+                    <div class="memory-reveal-img-wrap">
+                        <img src="image/memory2.jpg" alt="Memory" class="memory-reveal-img"
+                            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                        <div class="memory-reveal-placeholder"><span>📷</span><p>memory2.jpg</p></div>
+                    </div>
+                    <div class="memory-reveal-text">
+                        <span class="memory-number">02</span>
+                        <p class="memory-quote">"Every laugh we shared, every quiet moment — I would live them all again just to feel that joy."</p>
+                    </div>
+                </div>
+
+                <!-- Memory 3: Photo Left, Text Right -->
+                <div class="memory-reveal-row" data-memory-reveal="slide-left">
+                    <div class="memory-reveal-img-wrap">
+                        <img src="image/memory3.jpg" alt="Memory" class="memory-reveal-img"
+                            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                        <div class="memory-reveal-placeholder"><span>📷</span><p>memory3.jpg</p></div>
+                    </div>
+                    <div class="memory-reveal-text">
+                        <span class="memory-number">03</span>
+                        <p class="memory-quote">"In all the chaos of life, you are my stillness. My favourite place to be."</p>
+                    </div>
+                </div>
+
+                <!-- Memory 4: Photo Right, Text Left -->
+                <div class="memory-reveal-row reverse" data-memory-reveal="slide-right">
+                    <div class="memory-reveal-img-wrap">
+                        <img src="image/memory4.jpg" alt="Memory" class="memory-reveal-img"
+                            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                        <div class="memory-reveal-placeholder"><span>📷</span><p>memory4.jpg</p></div>
+                    </div>
+                    <div class="memory-reveal-text">
+                        <span class="memory-number">04</span>
+                        <p class="memory-quote">"I am so grateful that out of everyone in the world, I get to know you, love you, and call you mine."</p>
                     </div>
                 </div>
             </section>
