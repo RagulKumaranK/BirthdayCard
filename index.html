@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Special Surprise</title>
+    <!-- Elegant Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Starry Background Layer -->
+    <div class="stars-container">
+        <div id="stars"></div>
+        <div id="stars2"></div>
+        <div id="stars3"></div>
+    </div>
+
+    <!-- Background Particles Canvas -->
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- Ambient Glow Background -->
+    <div class="ambient-glow"></div>
+
+    <!-- Welcome Screen Initial Overlay -->
+    <div id="welcome-screen" class="screen full-screen flex-center">
+        <h2 class="script-title massive welcome-text">A little surprise made just for you...</h2>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <main id="app-container" class="hidden">
+
+        <!-- SECTION 1: Locked Countdown Screen -->
+        <section id="countdown-screen" class="screen active countdown-bg-animated">
+            <!-- Background Image Layer -->
+            <div class="countdown-photo-wrapper">
+                <img src="/image/IMG_4347.JPG" alt="Anticipation" class="countdown-photo">
+                <div class="countdown-overlay"></div>
+            </div>
+
+            <div class="countdown-content content-fade-in relative-z">
+                <h1 class="script-title elegant-shimmer">A special surprise is waiting for you</h1>
+                <p class="romantic-subtitle">Every second brings me closer to you...</p>
+
+                <div class="timer-container" id="countdown-timer">
+                    <div class="time-box">
+                        <span class="time-val" id="days">00</span>
+                        <span class="time-label">Days</span>
+                    </div>
+                    <span class="time-sep">:</span>
+                    <div class="time-box">
+                        <span class="time-val" id="hours">00</span>
+                        <span class="time-label">Hours</span>
+                    </div>
+                    <span class="time-sep">:</span>
+                    <div class="time-box">
+                        <span class="time-val" id="minutes">00</span>
+                        <span class="time-label">Minutes</span>
+                    </div>
+                    <span class="time-sep">:</span>
+                    <div class="time-box">
+                        <span class="time-val" id="seconds">00</span>
+                        <span class="time-label">Seconds</span>
+                    </div>
+                </div>
+
+                <div class="unlock-container">
+                    <button id="unlock-btn" class="magical-btn locked" disabled>
+                        <span class="btn-text">Locked</span>
+                        <div class="btn-glow-layer"></div>
+                    </button>
+                    <p class="unlock-hint" id="unlock-hint-text">Unlocks exactly at midnight...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 1.5: Playful Verification Screen -->
+        <section id="verification-screen" class="screen hidden flex-center">
+            <div class="verification-content full-screen flex-center">
+                <h2 class="script-title massive majestic-glow text-center" style="margin-bottom: 2rem;">Wait...</h2>
+                <p class="verification-subtitle text-center">How do I know this is really Jansi?</p>
+
+                <!-- Question 1 -->
+                <div id="question-1-container" class="question-container active-q">
+                    <p class="question-text">What is the nickname I always call you?</p>
+                    <div class="input-group">
+                        <input type="text" id="answer-1" class="elegant-input" placeholder="Your answer...">
+                        <button id="verify-next-btn" class="magical-btn small-btn">
+                            <span class="btn-text">Next</span>
+                            <div class="btn-glow-layer"></div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Question 2 (Hidden initially) -->
+                <div id="question-2-container" class="question-container hidden">
+                    <p class="question-text">When did we first meet?</p>
+                    <div class="input-group">
+                        <input type="text" id="answer-2" class="elegant-input" placeholder="Your answer...">
+                        <button id="verify-unlock-btn" class="magical-btn small-btn">
+                            <span class="btn-text">Unlock</span>
+                            <div class="btn-glow-layer"></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The rest of the experience (hidden initially) -->
+        <div id="main-experience" class="hidden">
+            <!-- SECTION 3 & 4: Cinematic Birthday Reveal & Message -->
+            <section id="hero-reveal" class="experience-section full-screen flex-center cinematic-bg-section">
+                <!-- Background Image Layer -->
+                <div class="cinematic-bg-wrapper" id="cinematic-bg">
+                    <img src="/image/reveal-photo.jpg" alt="Beautiful Memory" class="cinematic-photo">
+                    <div class="gradient-overlay"></div>
+                </div>
+
+                <div class="hero-content relative-z" data-observe="fade-up">
+                    <h2 class="script-title massive majestic-glow hidden-initially text-center" id="hero-title">Happy
+                        Birthday<br>My Love ❤️</h2>
+
+                    <div class="message-container hidden-initially" id="hero-message-container">
+                        <p class="typewriter-text" id="love-message-box"></p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 5: Memories Gallery -->
+            <section id="memories-gallery" class="experience-section gallery-section">
+                <div class="gallery-header" data-observe="fade-in">
+                    <h3 class="script-title large">Our Beautiful Journey</h3>
+                    <p class="sub-text">Every moment with you is magic</p>
+                </div>
+
+                <div class="gallery-track">
+                    <!-- Memory Card 1 -->
+                    <div class="memory-card" data-observe="memory-bloom">
+                        <div class="memory-img-box">
+                            <div class="image-placeholder soft-edge"></div>
+                        </div>
+                        <p class="memory-caption">That first day we smiled at each other...</p>
+                    </div>
+                    <!-- Memory Card 2 -->
+                    <div class="memory-card" data-observe="memory-bloom" style="transition-delay: 0.3s;">
+                        <div class="memory-img-box">
+                            <div class="image-placeholder soft-edge"></div>
+                        </div>
+                        <p class="memory-caption">Lost in the beauty of your eyes.</p>
+                    </div>
+                    <!-- Memory Card 3 -->
+                    <div class="memory-card" data-observe="memory-bloom" style="transition-delay: 0.6s;">
+                        <div class="memory-img-box">
+                            <div class="image-placeholder soft-edge"></div>
+                        </div>
+                        <p class="memory-caption">To countless more adventures together.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 6: Love Letter -->
+            <section id="love-letter" class="experience-section full-screen flex-center">
+                <div class="letter-card glowing-card" data-observe="scale-in">
+                    <div class="letter-content">
+                        <h3 class="script-title">My Dearest...</h3>
+                        <p class="letter-body">
+                            Today is the day the world was blessed with you.
+                            I want to take a moment to tell you how incredibly special you are to me.
+                            Your smile lights up my darkest hours, and your love gives me the strength to conquer
+                            anything.
+                            <br><br>
+                            I promise to always cherish you, to hold you close when things get tough, and to make you
+                            laugh until your stomach hurts.
+                            You are the best thing that has ever happened to me.
+                        </p>
+                        <p class="letter-signature script-title">With all my love,<br>Always.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 7: Final Surprise -->
+            <section id="final-surprise" class="experience-section full-screen flex-center">
+                <div class="secret-message-container" data-observe="fade-up">
+                    <p class="secret-pre-text">There is one more thing...</p>
+                    <p class="secret-heartfelt-text hidden-initially">Thank you for being a part of my life ❤️</p>
+                    
+                    <button id="final-btn" class="magical-btn hidden-initially" style="margin-top: 2rem;">
+                        <span class="btn-text">Open Final Reveal</span>
+                        <div class="btn-glow-layer"></div>
+                    </button>
+                </div>
+
+                <div id="final-reveal-content" class="hidden final-reveal-wrapper">
+                    <h1 class="script-title massive dramatic-fade-in text-shimmer">I Love You ❤️</h1>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- Background Audio -->
+    <audio id="bgm-audio" src="image/bgm.mp3" loop preload="auto"></audio>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
