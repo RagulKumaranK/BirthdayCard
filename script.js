@@ -14,14 +14,21 @@ document.addEventListener('DOMContentLoaded', () => {
         
         setTimeout(() => {
             if(welcomeScreen) welcomeScreen.style.opacity = '0';
-            if(appContainer) appContainer.classList.remove('hidden');
             
             setTimeout(() => {
                 if(welcomeScreen) welcomeScreen.style.display = 'none';
+                if(appContainer) {
+                    appContainer.classList.remove('hidden');
+                    // Small delay to allow display:block to apply before changing opacity
+                    setTimeout(() => {
+                        appContainer.style.opacity = '1';
+                    }, 50);
+                }
+                
                 // Trigger any initial observers that are now visible
                 initObservers();
-            }, 2000);
-        }, 1500);
+            }, 2000); // 2 seconds for welcome screen to fade out completely
+        }, 1500); // wait before fading out welcome background
     }, 4000); // Time to read welcome text
 
 
