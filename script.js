@@ -239,15 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let countdownInterval;
 
     // Backdoor for testing: clicking the title 5 times quickly sets time to 5 seconds from now
-    let clickCount = 0;
-    titleText.addEventListener('click', () => {
-        clickCount++;
-        if (clickCount >= 5) {
-            testModeDate = new Date().getTime() + 5000;
-            hintText.innerText = 'Test mode activated...';
-            clickCount = 0;
-        }
-    });
+
 
 
 
