@@ -239,7 +239,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let countdownInterval;
 
     // Backdoor for testing: clicking the title 5 times quickly sets time to 5 seconds from now
-
+    let clickCount = 0;
+    titleText.addEventListener('click', () => {
+        clickCount++;
+        if (clickCount >= 5) {
+            testModeDate = new Date().getTime() + 5000;
+            hintText.innerText = 'Test mode activated...';
+            clickCount = 0;
+        }
+    });
 
 
 
@@ -516,10 +524,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- TYPING MESSAGE ---
     // Use a real array of lines — much simpler and bug-free
     const loveMessageLines = [
-        " ",
-        " ",
-        "My love Every moment with you feels like a dream I never want to wake up from You have brought so much light, so much joy, and so much beauty into my life I created this just for you, because you deserve the world.",
-        "Happy Birthday. ❤️"
+        "My love…",
+        "Every moment with you feels like something I never want to lose.",
+        "You didn't just enter my life… you changed it completely.",
+        "You made ordinary days feel special,",
+        "You made me smile without any reason,",
+        "You became my peace in the middle of everything.",
+        "This… is not just a website.",
+        "This is a small piece of my heart, made only for you.",
+        "Because you deserve more than words can ever explain.",
+        "Happy Birthday, my love ❤️"
     ];
 
     function typeMessage() {
@@ -555,36 +569,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- FINAL SURPRISE ---
     const finalBtn = document.getElementById('final-btn');
-    const finalReveal = document.getElementById('final-reveal-content');
 
     finalBtn.addEventListener('click', () => {
         finalBtn.style.opacity = '0';
         finalBtn.style.pointerEvents = 'none';
+        
+        // Pause all other audio
+        const bgm = document.getElementById('bgm-audio');
+        if (bgm) bgm.pause();
+        
+        playMeow();
+
+        // Target video for fullscreen directly on user click
+        const video = document.getElementById('finale-video');
+        if (video) {
+            if (video.requestFullscreen)           video.requestFullscreen();
+            else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen();
+            else if (video.webkitEnterFullscreen)   video.webkitEnterFullscreen();
+        }
 
         setTimeout(() => {
             finalBtn.classList.add('hidden');
-            finalReveal.classList.remove('hidden');
-
-            // Add more hearts for final scene
-            for (let i = 0; i < 100; i++) {
-                let p = new HeartParticle();
-                p.y = height + Math.random() * height; // spread them out below
-                p.speedY = Math.random() * 2 + 1; // faster
-                p.size = Math.random() * 4 + 2; // bigger
-                particles.push(p);
-            }
-
-            // Darken background deeply
-            document.body.style.background = '#000000';
-            document.body.style.backgroundColor = '#000000';
-
-            const glow = document.querySelector('.ambient-glow');
-            if (glow) glow.style.opacity = '0';
-
-            const stars = document.querySelector('.stars-container');
-            if (stars) stars.style.opacity = '0';
-
-        }, 1000);
+            showCinematicVideo();
+        }, 600);
     });
 
     // --- GALLERY: Duplicate cards for seamless infinite scroll ---
@@ -602,21 +609,154 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     initGalleryCarousel();
 
+    // --- MEOW SOUND SYSTEM ---
+    function playMeow() {
+        const meow = document.getElementById('meow-audio');
+        if (!meow) return;
+        meow.currentTime = 0;
+        meow.play().catch(() => { }); // silently ignore autoplay blocks
+    }
+
+    function showMeowBubble(x, y) {
+        const msgs = ['meow~', '🐾 meow!', 'purr~', '🐾 mrrrow~', 'meow meow~', '*purrs*'];
+        const bubble = document.createElement('div');
+        bubble.className = 'meow-bubble';
+        bubble.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+        bubble.style.left = `${x - 30}px`;
+        bubble.style.top = `${y - 50}px`;
+        document.body.appendChild(bubble);
+        setTimeout(() => bubble.remove(), 1500);
+    }
+
+    function initMeow() {
+        // Meow on all [data-meow] elements
+        document.querySelectorAll('[data-meow]').forEach(el => {
+            el.addEventListener('click', (e) => {
+                playMeow();
+                const rect = el.getBoundingClientRect();
+                const cx = rect.left + rect.width / 2;
+                const cy = rect.top;
+                showMeowBubble(cx, cy);
+            });
+        });
+
+        // Meow on EVERY button click site-wide
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            // Don't double-trigger if already handled by data-meow
+            if (btn.hasAttribute('data-meow')) return;
+            // Skip skip/close buttons to avoid audio conflict
+            if (btn.id === 'video-skip-btn') return;
+            playMeow();
+            showMeowBubble(e.clientX, e.clientY - 20);
+        });
+    }
+    initMeow();
+
+    // Random meow every ~12 screen taps on non-button areas
+    let tapCountForMeow = 0;
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('button') || e.target.tagName === 'INPUT') return;
+        tapCountForMeow++;
+        if (tapCountForMeow >= 12) {
+            tapCountForMeow = 0;
+            playMeow();
+            showMeowBubble(e.clientX, e.clientY);
+        }
+    });
+
+    // --- CAKE SECTION ---
+    function initCakeSection() {
+        const cakeWrapper = document.getElementById('cake-wrapper');
+        const knifeSlash = document.getElementById('knife-slash');
+        const cakePrompt = document.getElementById('cake-prompt');
+        const cakeCutMsg = document.getElementById('cake-cut-msg');
+        const hbSection = document.getElementById('happy-birthday-section');
+
+        if (!cakeWrapper) return;
+
+        let cakeCut = false;
+
+        cakeWrapper.addEventListener('click', () => {
+            if (cakeCut) return;
+            cakeCut = true;
+
+            // Play knife slash animation
+            knifeSlash.classList.add('cutting');
+            playMeow();
+
+            // After knife crosses — apply cut effect
+            setTimeout(() => {
+                cakeWrapper.classList.add('cut');
+                triggerConfetti();
+
+                // Swap prompt text
+                if (cakePrompt) cakePrompt.style.display = 'none';
+                if (cakeCutMsg) {
+                    cakeCutMsg.classList.remove('hidden');
+                }
+
+                // Reveal Happy Birthday section after a moment
+                setTimeout(() => {
+                    if (hbSection) {
+                        hbSection.classList.remove('hbd-hidden');
+                        hbSection.classList.add('hbd-visible');
+                        spawnBalloons();
+                        // Scroll to it
+                        hbSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 1800);
+            }, 700);
+        });
+    }
+    initCakeSection();
+
+    // Spawn balloons inside happy birthday section
+    function spawnBalloons() {
+        const container = document.getElementById('balloons-container');
+        if (!container) return;
+        const emojis = ['🎈', '🎀', '🎊', '🎉', '💕', '🐾', '🌸', '🎈'];
+        emojis.forEach((emoji, i) => {
+            const b = document.createElement('span');
+            b.className = 'balloon';
+            b.textContent = emoji;
+            b.style.left = `${8 + (i * 12)}%`;
+            b.style.animationDuration = `${3.5 + Math.random() * 2}s`;
+            b.style.animationDelay = `${i * 0.2}s`;
+            b.style.fontSize = `${2.5 + Math.random() * 1.5}rem`;
+            container.appendChild(b);
+        });
+    }
+
 });
 
 // --- LIGHTBOX FUNCTIONS (global so onclick works) ---
 function openLightbox(card) {
     const img = card.querySelector('.gallery-img');
+    const videoSrc = card.dataset.video;
     const caption = card.dataset.caption || '';
-
-    if (!img || img.style.display === 'none') return; // Don't open if only placeholder
 
     const lightbox = document.getElementById('lightbox');
     const lbImg = document.getElementById('lightbox-img');
+    const lbVideo = document.getElementById('lightbox-video');
     const lbCaption = document.getElementById('lightbox-caption');
 
-    lbImg.src = img.src;
-    lbImg.alt = img.alt;
+    if (videoSrc) {
+        lbImg.classList.add('hidden');
+        lbVideo.classList.remove('hidden');
+        lbVideo.src = videoSrc;
+        lbVideo.muted = true; // Image-like behavior
+        lbVideo.play().catch(() => {});
+    } else {
+        if (!img || img.style.display === 'none') return; // Don't open if only placeholder
+        lbVideo.classList.add('hidden');
+        lbVideo.pause();
+        lbImg.classList.remove('hidden');
+        lbImg.src = img.src;
+        lbImg.alt = img.alt;
+    }
+
     lbCaption.textContent = caption;
 
     lightbox.style.display = 'flex';
@@ -632,7 +772,10 @@ function openLightbox(card) {
 
 function closeLightbox() {
     const lightbox = document.getElementById('lightbox');
+    const lbVideo = document.getElementById('lightbox-video');
+    
     lightbox.style.opacity = '0';
+    if (lbVideo) lbVideo.pause();
 
     setTimeout(() => {
         lightbox.classList.remove('active');
@@ -648,3 +791,50 @@ function closeLightbox() {
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeLightbox();
 });
+
+
+// --- CINEMATIC VIDEO FINALE — LEFT-TO-RIGHT SLIDE REVEAL ---
+function showCinematicVideo() {
+    const section  = document.getElementById('video-finale-section');
+    const video    = document.getElementById('finale-video');
+    const skipBtn  = document.getElementById('video-skip-btn');
+    const tapHint  = document.getElementById('video-tap-hint');
+    if (!section) return;
+
+    // Show section
+    section.classList.remove('hidden');
+    section.getBoundingClientRect(); // force reflow
+
+    // Reveal video immediately with unmuted sound
+    if (video) {
+        video.muted = false;
+        video.volume = 1;
+        video.play().catch(() => {});
+    }
+
+    // Step 1: Slide the panel
+    setTimeout(() => {
+        section.classList.add('slide-reveal');
+    }, 120);
+
+    // Hide the hint since it's automatic now
+    if (tapHint) tapHint.style.display = 'none';
+
+    // Skip button — close and stop
+    if (skipBtn) {
+        skipBtn.addEventListener('click', () => {
+            if (video) {
+                video.pause();
+                if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen().catch(() => {});
+            }
+            section.style.opacity = '0';
+            section.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => {
+                section.classList.add('hidden');
+                section.style.opacity = '';
+                section.style.transition = '';
+            }, 550);
+        });
+    }
+}
