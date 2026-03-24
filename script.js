@@ -5,6 +5,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const appContainer = document.getElementById('app-container');
 
     // Smooth reveal sequence on load
+    if (sessionStorage.getItem('surprise_unlocked') === 'true') {
+        const _ws = document.getElementById('welcome-screen');
+        const _ac = document.getElementById('app-container');
+        const _cs = document.getElementById('countdown-screen');
+        const _vs = document.getElementById('verification-screen');
+        const _me = document.getElementById('main-experience');
+        if (_ws) _ws.style.display = 'none';
+        if (_cs) _cs.classList.add('hidden');
+        if (_vs) _vs.classList.add('hidden');
+        if (_ac) { _ac.classList.remove('hidden'); _ac.style.opacity = '1'; }
+        if (_me) { _me.classList.remove('hidden'); setTimeout(() => { window.scrollTo(0, 0); triggerCinematicReveal(); }, 100); }
+        setTimeout(initObservers, 200);
+        document.addEventListener('click', function _play() {
+            const bgm = document.getElementById('bgm-audio');
+            if (bgm && bgm.paused) { bgm.volume = 0.6; bgm.play().catch(()=>{}); }
+            document.removeEventListener('click', _play);
+        }, { once: true });
+    } else {
     setTimeout(() => {
         if (welcomeText) welcomeText.style.opacity = '1';
     }, 500);
@@ -30,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 2000); // 2 seconds for welcome screen to fade out completely
         }, 1500); // wait before fading out welcome background
     }, 4000); // Time to read welcome text
+    }
 
 
     // --- CANVAS PARTICLE SYSTEM ---
@@ -390,6 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.head.appendChild(style);
 
     function startExperience() {
+        sessionStorage.setItem('surprise_unlocked', 'true');
         const verificationScreen = document.getElementById('verification-screen');
         const mainExperience = document.getElementById('main-experience');
 
@@ -609,6 +629,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     initGalleryCarousel();
 
+    // Add pause mechanism for carousel and videos on hover and touch
+    const carouselElem = document.getElementById('gallery-carousel');
+    if (carouselElem) {
+        const startPauseTrack = () => { carouselElem.style.animationPlayState = 'paused'; };
+        const endPauseTrack   = () => { carouselElem.style.animationPlayState = ''; }; // fallback to CSS
+
+        carouselElem.addEventListener('mouseenter', startPauseTrack);
+        carouselElem.addEventListener('mouseleave', endPauseTrack);
+        carouselElem.addEventListener('touchstart', startPauseTrack, { passive: true });
+        carouselElem.addEventListener('touchend', endPauseTrack, { passive: true });
+        carouselElem.addEventListener('touchcancel', endPauseTrack, { passive: true });
+
+        const interactables = carouselElem.querySelectorAll('.gallery-card');
+        interactables.forEach(card => {
+            const video = card.querySelector('video');
+            if (video) {
+                const startPauseVideo = () => { video.pause(); };
+                const endPauseVideo   = () => { video.play().catch(() => {}); };
+
+                card.addEventListener('mouseenter', startPauseVideo);
+                card.addEventListener('mouseleave', endPauseVideo);
+                card.addEventListener('touchstart', startPauseVideo, { passive: true });
+                card.addEventListener('touchend', endPauseVideo, { passive: true });
+                card.addEventListener('touchcancel', endPauseVideo, { passive: true });
+            }
+        });
+    }
+
     // --- MEOW SOUND SYSTEM ---
     function playMeow() {
         const meow = document.getElementById('meow-audio');
@@ -794,6 +842,391 @@ document.addEventListener('keydown', (e) => {
 
 
 // --- CINEMATIC VIDEO FINALE — LEFT-TO-RIGHT SLIDE REVEAL ---
+// --- CENTER FOCUS VIDEO SLIDER ---
+document.addEventListener('DOMContentLoaded', () => {
+    function initCenterFocusSlider() {
+        const track = document.getElementById('c-slider-track');
+        if (!track) return;
+        
+        const slides = Array.from(track.querySelectorAll('.center-slide'));
+        const nextBtn = document.getElementById('c-slider-next');
+        const prevBtn = document.getElementById('c-slider-prev');
+        const numSlides = slides.length;
+        
+        if (numSlides === 0) return;
+
+        let activeIndex = 0;
+
+        function updateSlider() {
+            slides.forEach((slide, i) => {
+                slide.className = 'center-slide'; // reset class list
+                const diff = (i - activeIndex + numSlides) % numSlides;
+                
+                if (diff === 0) slide.classList.add('active');
+                else if (diff === 1) slide.classList.add('next-1');
+                else if (diff === 2) slide.classList.add('next-2');
+                else if (diff === numSlides - 1) slide.classList.add('prev-1');
+                else if (diff === numSlides - 2) slide.classList.add('prev-2');
+                else slide.classList.add('hidden-slide');
+            });
+
+            // Handle video playback
+            slides.forEach((slide, i) => {
+                const video = slide.querySelector('video');
+                if (video) {
+                    if (i === activeIndex) {
+                        video.currentTime = 0;
+                        if (sliderInView) {
+                            video.play().catch(() => {});
+                        }
+                    } else {
+                        video.pause();
+                    }
+                }
+            });
+        }
+
+        // Auto-advance when video ends
+        slides.forEach((slide) => {
+            const video = slide.querySelector('video');
+            if (video) {
+                video.addEventListener('ended', () => {
+                    if (slide.classList.contains('active')) {
+                        goNext();
+                    }
+                });
+            }
+        });
+
+        function goNext() {
+            activeIndex = (activeIndex + 1) % numSlides;
+            updateSlider();
+        }
+
+        function goPrev() {
+            activeIndex = (activeIndex - 1 + numSlides) % numSlides;
+            updateSlider();
+        }
+
+        if (nextBtn) nextBtn.addEventListener('click', () => { goNext(); if(typeof playMeow === 'function') playMeow(); });
+        if (prevBtn) prevBtn.addEventListener('click', () => { goPrev(); if(typeof playMeow === 'function') playMeow(); });
+
+        slides.forEach((slide, i) => {
+            slide.addEventListener('click', () => {
+                const isPrev1 = slide.classList.contains('prev-1');
+                const isNext1 = slide.classList.contains('next-1');
+                if (isPrev1) { goPrev(); if(typeof playMeow === 'function') playMeow(); }
+                else if (isNext1) { goNext(); if(typeof playMeow === 'function') playMeow(); }
+            });
+        });
+
+        // Intersection Observer for autoplay only when in view
+        let sliderInView = false;
+        const section = document.getElementById('center-video-slider');
+        if (section) {
+            const observer = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting) {
+                    sliderInView = true;
+                    updateSlider(); // Play the active video
+                } else {
+                    sliderInView = false;
+                    const activeVideo = slides[activeIndex].querySelector('video');
+                    if (activeVideo) activeVideo.pause();
+                }
+            }, { threshold: 0.3 });
+            observer.observe(section);
+        }
+
+        // Swipe support
+        let touchStartX = 0;
+        let touchEndX = 0;
+        track.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+        track.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            if (touchStartX - touchEndX > 50) goNext();
+            if (touchEndX - touchStartX > 50) goPrev();
+        }, { passive: true });
+
+        updateSlider();
+    }
+    
+    // Give DOM a tick to establish elements before initializing observer
+    setTimeout(initCenterFocusSlider, 100);
+});
+
+// --- SECTION 5.9: Secret Scratch Card ---
+document.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById('scratch-canvas');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let scratchedPixels = 0;
+    let totalPixels = 0;
+    
+    function initCanvas() {
+        // Enforce 300x300 because the app-container is initially hidden during the welcome sequence!
+        canvas.width = 300;
+        canvas.height = 300;
+        totalPixels = canvas.width * canvas.height;
+        
+        ctx.fillStyle = '#c0c0c0'; // Silver
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.font = '20px Inter, sans-serif';
+        ctx.fillStyle = '#666';
+        ctx.textAlign = 'center';
+        ctx.fillText('Scratch me 🐾', canvas.width/2, canvas.height/2);
+        
+        ctx.globalCompositeOperation = 'destination-out';
+    }
+    
+    setTimeout(initCanvas, 500); // Give layout time to settle
+    window.addEventListener('resize', initCanvas);
+    
+    function getMousePos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+            x: clientX - rect.left,
+            y: clientY - rect.top
+        };
+    }
+    
+    function scratch(e) {
+        if (!isDrawing) return;
+        if(e.cancelable) e.preventDefault(); // allow scratching on mobile without zooming
+        const pos = getMousePos(e);
+        
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 25, 0, Math.PI * 2);
+        ctx.fill();
+        
+        checkScratchProgress();
+    }
+    
+    function checkScratchProgress() {
+        // Sample every 32nd pixel for performance
+        const imageData = ctx.getImageData(0,0, canvas.width, canvas.height).data;
+        let transparent = 0;
+        for (let i = 3; i < imageData.length; i += 32) { // check alpha
+            if (imageData[i] === 0) transparent++;
+        }
+        const percent = transparent / (imageData.length / 32);
+        
+        if (percent > 0.45) { // If 45% scratched, reveal!
+            canvas.style.opacity = '0';
+            setTimeout(() => { canvas.style.display = 'none'; }, 800);
+            canvas.removeEventListener('mousemove', scratch);
+            canvas.removeEventListener('touchmove', scratch);
+        }
+    }
+    
+    canvas.addEventListener('mousedown', (e) => { isDrawing = true; scratch(e); });
+    canvas.addEventListener('touchstart', (e) => { isDrawing = true; scratch(e); }, {passive: false});
+    document.addEventListener('mouseup', () => { isDrawing = false; });
+    document.addEventListener('touchend', () => { isDrawing = false; });
+    canvas.addEventListener('mousemove', scratch);
+    canvas.addEventListener('touchmove', scratch, {passive: false});
+});
+
+// --- SECTION 6.5: Vinyl Player ---
+document.addEventListener('DOMContentLoaded', () => {
+    const vinylWrapper = document.getElementById('vinyl-player');
+    const voiceNote = document.getElementById('voice-note');
+    if (!vinylWrapper || !voiceNote) return;
+
+    vinylWrapper.addEventListener('click', () => {
+        if (typeof playMeow === 'function') playMeow();
+        const bgmAudio = document.getElementById('bgm-audio');
+        
+        if (voiceNote.paused) {
+            // Pause background music before playing voice note
+            if (bgmAudio && !bgmAudio.paused) {
+                bgmAudio.pause();
+                bgmAudio.dataset.wasPlaying = 'true';
+            }
+            voiceNote.play().catch(()=>{});
+            vinylWrapper.classList.add('playing');
+        } else {
+            voiceNote.pause();
+            vinylWrapper.classList.remove('playing');
+            // Resume background music if manually paused
+            if (bgmAudio && bgmAudio.dataset.wasPlaying === 'true') {
+                bgmAudio.play().catch(()=>{});
+            }
+        }
+    });
+
+    voiceNote.addEventListener('ended', () => {
+        vinylWrapper.classList.remove('playing');
+        // Resume background music when voice note completely finishes
+        const bgmAudio = document.getElementById('bgm-audio');
+        if (bgmAudio && bgmAudio.dataset.wasPlaying === 'true') {
+            bgmAudio.play().catch(()=>{});
+        }
+    });
+});
+
+// --- SECTION 6.8 & 6.9: Heartbeat Scanner & Gift Box ---
+document.addEventListener('DOMContentLoaded', () => {
+    const scannerScan = document.querySelector('.fingerprint-scan');
+    const scannerFill = document.getElementById('scanner-fill');
+    const scannerText = document.getElementById('scanner-text');
+    const giftSection = document.getElementById('gift-section');
+    
+    let scanTimer;
+    let scanProgress = 0;
+    let scanInterval;
+    let verified = false;
+    
+    if (scannerScan) {
+        const startScan = (e) => {
+            if (verified) return;
+            if(e.cancelable) e.preventDefault();
+            scannerScan.classList.add('scanning');
+            if(scannerText) scannerText.innerText = "Scanning... Hold still!";
+            
+            scanInterval = setInterval(() => {
+                scanProgress += 2;
+                if (scannerFill) scannerFill.style.width = scanProgress + '%';
+                
+                if (scanProgress >= 100) {
+                    finishScan();
+                }
+            }, 30);
+        };
+        
+        const stopScan = () => {
+            if (verified) return;
+            clearInterval(scanInterval);
+            scannerScan.classList.remove('scanning');
+            
+            if (scanProgress < 100) {
+                scanProgress = 0;
+                if (scannerFill) scannerFill.style.width = '0%';
+                if(scannerText) scannerText.innerText = "Verification failed. Try again 🐾";
+            }
+        };
+        
+        const finishScan = () => {
+            clearInterval(scanInterval);
+            verified = true;
+            scannerScan.classList.remove('scanning');
+            if(scannerText) {
+                scannerText.innerText = "Heartbeat Verified! ❤️ Match: 100%";
+                scannerText.style.color = "#ff758f";
+            }
+            
+            if(typeof playMeow === 'function') playMeow();
+            
+            // Reveal Gift Box
+            setTimeout(() => {
+                if (giftSection) {
+                    giftSection.classList.remove('hidden');
+                    giftSection.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 1000);
+        };
+        
+        scannerScan.addEventListener('mousedown', startScan);
+        scannerScan.addEventListener('touchstart', startScan, {passive: false});
+        document.addEventListener('mouseup', stopScan);
+        document.addEventListener('touchend', stopScan);
+    }
+    
+    // --- SECTION 6.9: Gift Box Taps ---
+    const giftBox = document.getElementById('gift-box');
+    const finalSurprise = document.getElementById('final-surprise');
+    let tapCount = 0;
+    
+    if (giftBox) {
+        giftBox.addEventListener('click', () => {
+            if (tapCount >= 3) return;
+            tapCount++;
+            
+            giftBox.classList.remove('shake');
+            void giftBox.offsetWidth;
+            giftBox.classList.add('shake');
+            
+            if(typeof playMeow === 'function') playMeow();
+            
+            if (tapCount === 3) {
+                giftBox.classList.add('open');
+                createConfetti();
+                
+                setTimeout(() => {
+                    if (finalSurprise) {
+                        finalSurprise.classList.remove('hidden');
+                        finalSurprise.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }, 1500);
+            }
+        });
+    }
+    
+    function createConfetti() {
+        const container = document.getElementById('confetti-container');
+        if (!container) return;
+        const colors = ['#ff4d6d', '#ff758f', '#ffd166', '#fff0f5', '#4cc9f0'];
+        
+        for (let i = 0; i < 40; i++) {
+            const confetti = document.createElement('div');
+            confetti.classList.add('confetti-piece');
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            
+            // Random trajectory
+            const tx = (Math.random() - 0.5) * 400 + 'px';
+            const ty = (Math.random() - 1) * 400 + 'px';
+            const tr = (Math.random() - 0.5) * 720 + 'deg';
+            
+            confetti.style.setProperty('--tx', tx);
+            confetti.style.setProperty('--ty', ty);
+            confetti.style.setProperty('--tr', tr);
+            
+            container.appendChild(confetti);
+        }
+    }
+});
+
+// --- SECTION 5.6.5: Clickable Photo Stack ---
+document.addEventListener('DOMContentLoaded', () => {
+    const stackContainer = document.getElementById('cute-pics-container');
+    if (!stackContainer) return;
+
+    const cards = Array.from(stackContainer.querySelectorAll('.cute-pic-card'));
+    // Sort cards so the highest z-index is first in the array
+    cards.sort((a, b) => {
+        return parseInt(b.style.zIndex) - parseInt(a.style.zIndex);
+    });
+
+    let currentCardIndex = 0;
+
+    stackContainer.addEventListener('click', () => {
+        if (currentCardIndex >= cards.length - 1) {
+            // Last card reached. Do a little happy shake
+            const lastCard = cards[currentCardIndex];
+            lastCard.style.transform = 'scale(1.05) rotate(0deg)';
+            setTimeout(() => {
+                lastCard.style.transform = 'scale(1) rotate(0deg)';
+            }, 300);
+            if(typeof playMeow === 'function') playMeow();
+            return;
+        }
+
+        // Throw away the top card
+        const cardToThrow = cards[currentCardIndex];
+        cardToThrow.classList.add('throw-away');
+        if(typeof playMeow === 'function') playMeow();
+        
+        currentCardIndex++;
+    });
+});
+
+// --- CINEMATIC VIDEO FINALE — LEFT-TO-RIGHT SLIDE REVEAL ---
 function showCinematicVideo() {
     const section  = document.getElementById('video-finale-section');
     const video    = document.getElementById('finale-video');
@@ -837,4 +1270,208 @@ function showCinematicVideo() {
             }, 550);
         });
     }
+    // Auto-close and resume music when video naturally ends
+    if (video) {
+        video.addEventListener('ended', () => {
+            section.style.opacity = '0';
+            section.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => {
+                section.classList.add('hidden');
+                section.style.opacity = '';
+                section.style.transition = '';
+            }, 550);
+            
+            const bgm = document.getElementById('bgm-audio');
+            if (bgm && bgm.paused) bgm.play().catch(()=>{});
+        });
+    }
+
+    // Also resume music if user clicks skip
+    if (skipBtn) {
+        skipBtn.addEventListener('click', () => {
+            const bgm = document.getElementById('bgm-audio');
+            if (bgm && bgm.paused) bgm.play().catch(()=>{});
+        });
+    }
 }
+
+// --- SECTION 5.6.1: Reasons I Love You Jar ---
+document.addEventListener('DOMContentLoaded', () => {
+    const reasons = [
+        "Your smile instantly fixes my bad days.",
+        "The way you look at me makes me feel so special.",
+        "Your laugh is my absolute favorite sound.",
+        "You always know how to make me laugh.",
+        "I love how we can talk about everything and nothing.",
+        "You are my peace in this noisy world.",
+        "Every little thing you do is magic to me.",
+        "I simply just love you.",
+        "There's nobody else I'd rather spend my time with.",
+        "I get lost in your eyes every single time.",
+        "Because of you, I understand what love really is."
+    ];
+
+    const jar = document.getElementById('reasons-jar');
+    const flyingPaper = document.getElementById('flying-paper');
+    const flyingPaperText = document.getElementById('flying-paper-text');
+    let isFlying = false;
+
+    if (jar && flyingPaper && flyingPaperText) {
+        jar.addEventListener('click', () => {
+            if (isFlying) return;
+            isFlying = true;
+            
+            jar.classList.remove('jar-shake');
+            void jar.offsetWidth; 
+            jar.classList.add('jar-shake');
+
+            if(typeof playMeow === 'function') playMeow();
+            
+            const randomReason = reasons[Math.floor(Math.random() * reasons.length)];
+            
+            flyingPaper.classList.remove('hidden');
+            flyingPaper.classList.remove('fly-out');
+            void flyingPaper.offsetWidth;
+            
+            flyingPaperText.innerText = randomReason;
+            flyingPaper.classList.add('fly-out');
+            
+            setTimeout(() => {
+                flyingPaper.classList.add('hidden');
+                flyingPaper.classList.remove('fly-out');
+                isFlying = false;
+            }, 4500);
+        });
+    }
+});
+
+// --- SECTION 5.7: Birthday Cake Microphone & Cut Logic ---
+document.addEventListener('DOMContentLoaded', () => {
+    const enableMicBtn = document.getElementById('enable-mic-btn');
+    const cakePrompt = document.getElementById('cake-prompt');
+    const flames = document.querySelectorAll('.flame');
+    const cakeWrapper = document.getElementById('cake-wrapper');
+    const knifeSlash = document.getElementById('knife-slash');
+    const cakeCutMsg = document.getElementById('cake-cut-msg');
+    const hbdSection = document.getElementById('happy-birthday-section');
+    
+    let audioContext;
+    let analyser;
+    let microphone;
+    let blowCheckInterval;
+    let flamesOut = 0;
+    let cakeCut = false;
+
+    if (enableMicBtn && flames.length > 0) {
+        enableMicBtn.addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                
+                enableMicBtn.parentElement.classList.add('hidden');
+                cakePrompt.classList.remove('hidden');
+
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                microphone = audioContext.createMediaStreamSource(stream);
+                
+                analyser.smoothingTimeConstant = 0.8;
+                analyser.fftSize = 256;
+                microphone.connect(analyser);
+                
+                detectBlow();
+            } catch (err) {
+                console.error("Microphone access denied:", err);
+                // Fallback to tap
+                enableMicBtn.parentElement.classList.add('hidden');
+                cakePrompt.classList.remove('hidden');
+                cakePrompt.innerText = "Tap the candles to put them out! 🎂";
+                
+                flames.forEach(flame => {
+                    flame.parentElement.addEventListener('click', () => {
+                        if (!flame.classList.contains('extinguished')) {
+                            flame.classList.add('extinguished');
+                            flamesOut++;
+                            checkAllFlamesOut();
+                        }
+                    });
+                });
+            }
+        });
+
+        function detectBlow() {
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            
+            blowCheckInterval = setInterval(() => {
+                analyser.getByteFrequencyData(dataArray);
+                let sum = 0;
+                for (let i = 0; i < bufferLength; i++) { sum += dataArray[i]; }
+                let average = sum / bufferLength;
+                
+                if (average > 85) { // Threshold for blow detection
+                    if (flamesOut < flames.length) {
+                        const activeFlames = Array.from(flames).filter(f => !f.classList.contains('extinguished'));
+                        if (activeFlames.length > 0) {
+                            activeFlames[activeFlames.length - 1].classList.add('extinguished');
+                            flamesOut++;
+                            checkAllFlamesOut();
+                        }
+                    }
+                }
+            }, 100);
+        }
+    }
+
+    function checkAllFlamesOut() {
+        if (flamesOut === flames.length) {
+            if (blowCheckInterval) clearInterval(blowCheckInterval);
+            if (audioContext && audioContext.state !== 'closed') audioContext.close();
+            
+            cakePrompt.innerText = "Yay! Now tap the cake to cut it 🐾";
+            cakePrompt.style.color = "#ff758f";
+            
+            // Enable cake cutting
+            if (cakeWrapper) {
+                cakeWrapper.style.cursor = 'pointer';
+                cakeWrapper.addEventListener('click', cutCake);
+            }
+        }
+    }
+
+    function cutCake() {
+        if (cakeCut || flamesOut < flames.length) return;
+        cakeCut = true;
+        
+        if (typeof playMeow === 'function') playMeow();
+        
+        if (knifeSlash) {
+            knifeSlash.style.opacity = '1';
+            knifeSlash.style.transform = 'translate(-50%, -50%) scale(1.5)';
+        }
+        
+        setTimeout(() => {
+            const topLayer = document.querySelector('.cake-top-layer');
+            const midLayer = document.querySelector('.cake-mid-layer');
+            if (topLayer) topLayer.style.transform = 'translateX(-20px) rotate(-5deg)';
+            if (midLayer) midLayer.style.transform = 'translateX(20px) rotate(5deg)';
+            
+            if (cakePrompt) cakePrompt.classList.add('hidden');
+            if (cakeCutMsg) cakeCutMsg.classList.remove('hidden');
+            if (knifeSlash) knifeSlash.style.opacity = '0';
+            
+            // Reveal HBD section
+            setTimeout(() => {
+                if (hbdSection) hbdSection.classList.remove('hbd-hidden');
+            }, 1000);
+        }, 500);
+    }
+});
+
+// Global reliable 'playMeow' override
+window.playMeow = function() {
+    try {
+        const meowSnd = new Audio('image/meow.mp3');
+        meowSnd.volume = 0.25; // Reduce volume significantly as requested
+        meowSnd.play().catch(()=>{});
+    } catch(e) {}
+};
