@@ -2404,3 +2404,81 @@ body {
         padding-top: env(safe-area-inset-top);
     }
 }
+
+/* ===== MOBILE PERFORMANCE OPTIMIZATIONS ===== */
+
+/* Reduce blur on countdown photo for mobile (GPU intensive) */
+@media (max-width: 768px) {
+    .countdown-photo {
+        filter: blur(1px);
+        animation: none; /* Disable slowPan on mobile */
+        transform: scale(1.05);
+    }
+
+    /* Reduce star animation complexity on mobile */
+    #stars, #stars2, #stars3 {
+        animation-duration: 120s, 240s, 360s;
+    }
+
+    #stars { opacity: 0.2; }
+    #stars2 { opacity: 0.3; }
+
+    /* Disable Ken Burns on mobile - just show photo */
+    .cinematic-photo.reveal-active {
+        animation: instantReveal 1.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        /* Remove Ken Burns infinite animation */
+    }
+
+    /* Simpler gradient animation */
+    .countdown-bg-animated {
+        animation-duration: 30s;
+    }
+
+    /* Reduce backdrop-filter usage (very expensive on mobile) */
+    .time-box {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        background: rgba(0, 0, 0, 0.4);
+    }
+
+    .lightbox-overlay {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+
+    /* Hardware accelerate scrolling carousel */
+    .gallery-carousel {
+        will-change: transform;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+    }
+
+    /* Optimize video thumbnails - don't decode until visible */
+    .gallery-video-thumb {
+        content-visibility: auto;
+    }
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    .gallery-carousel {
+        animation: none;
+    }
+}
+
+/* GPU acceleration for animated elements */
+.gallery-card-inner,
+.cinematic-photo,
+.countdown-photo,
+.center-slide,
+.cute-pic-card {
+    will-change: transform;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+}

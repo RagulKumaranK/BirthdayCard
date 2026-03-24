@@ -193,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Initialize floating hearts
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 20; i++) {
         // distribute initially
         let p = new HeartParticle();
         p.y = Math.random() * height;
@@ -614,7 +614,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 600);
     });
 
-    // --- GALLERY: Duplicate cards for seamless infinite scroll ---
+    // --- VIDEO PERFORMANCE: Only play videos when visible ---
+    function initVideoVisibilityObserver() {
+        const videoObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const video = entry.target;
+                if (entry.isIntersecting) {
+                    if (video.hasAttribute('loop')) {
+                        video.play().catch(() => {});
+                    }
+                } else {
+                    video.pause();
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('video').forEach(video => {
+            videoObserver.observe(video);
+        });
+    }
+    setTimeout(initVideoVisibilityObserver, 2000);
+
+        // --- GALLERY: Duplicate cards for seamless infinite scroll ---
     function initGalleryCarousel() {
         const carousel = document.getElementById('gallery-carousel');
         if (!carousel) return;
@@ -870,16 +891,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 else slide.classList.add('hidden-slide');
             });
 
-            // Handle video playback
+            // Handle video playback + smart preloading
             slides.forEach((slide, i) => {
                 const video = slide.querySelector('video');
                 if (video) {
+                    const diff = (i - activeIndex + numSlides) % numSlides;
                     if (i === activeIndex) {
+                        video.preload = 'auto';
                         video.currentTime = 0;
                         if (sliderInView) {
                             video.play().catch(() => {});
                         }
+                    } else if (diff === 1 || diff === numSlides - 1) {
+                        // Preload next & prev so they start instantly
+                        video.preload = 'auto';
+                        video.pause();
                     } else {
+                        video.preload = 'none';
                         video.pause();
                     }
                 }
