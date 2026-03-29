@@ -595,8 +595,7 @@ document.addEventListener('DOMContentLoaded', () => {
         finalBtn.style.pointerEvents = 'none';
         
         // Pause all other audio
-        const bgm = document.getElementById('bgm-audio');
-        if (bgm) bgm.pause();
+        pauseBGM();
         
         playMeow();
 
@@ -1072,30 +1071,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const bgmAudio = document.getElementById('bgm-audio');
         
         if (voiceNote.paused) {
-            // Pause background music before playing voice note
-            if (bgmAudio && !bgmAudio.paused) {
-                bgmAudio.pause();
-                bgmAudio.dataset.wasPlaying = 'true';
-            }
+            pauseBGM();
             voiceNote.play().catch(()=>{});
             vinylWrapper.classList.add('playing');
         } else {
             voiceNote.pause();
             vinylWrapper.classList.remove('playing');
-            // Resume background music if manually paused
-            if (bgmAudio && bgmAudio.dataset.wasPlaying === 'true') {
-                bgmAudio.play().catch(()=>{});
-            }
+            resumeBGM();
         }
     });
 
     voiceNote.addEventListener('ended', () => {
         vinylWrapper.classList.remove('playing');
-        // Resume background music when voice note completely finishes
-        const bgmAudio = document.getElementById('bgm-audio');
-        if (bgmAudio && bgmAudio.dataset.wasPlaying === 'true') {
-            bgmAudio.play().catch(()=>{});
-        }
+        resumeBGM();
     });
 });
 
@@ -1281,45 +1269,55 @@ function showCinematicVideo() {
     // Hide the hint since it's automatic now
     if (tapHint) tapHint.style.display = 'none';
 
-    // Skip button — close and stop
-    if (skipBtn) {
-        skipBtn.addEventListener('click', () => {
-            if (video) {
-                video.pause();
-                if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
-                else if (document.webkitExitFullscreen) document.webkitExitFullscreen().catch(() => {});
-            }
-            section.style.opacity = '0';
-            section.style.transition = 'opacity 0.5s ease';
-            setTimeout(() => {
-                section.classList.add('hidden');
-                section.style.opacity = '';
-                section.style.transition = '';
-            }, 550);
-        });
-    }
-    // Auto-close and resume music when video naturally ends
-    if (video) {
-        video.addEventListener('ended', () => {
-            section.style.opacity = '0';
-            section.style.transition = 'opacity 0.5s ease';
-            setTimeout(() => {
-                section.classList.add('hidden');
-                section.style.opacity = '';
-                section.style.transition = '';
-            }, 550);
-            
-            const bgm = document.getElementById('bgm-audio');
-            if (bgm && bgm.paused) bgm.play().catch(()=>{});
-        });
-    }
+    // Transition to YouTube finale on Skip or Ended
+    const triggerNext = () => transitionToYouTubeFinale();
 
-    // Also resume music if user clicks skip
-    if (skipBtn) {
-        skipBtn.addEventListener('click', () => {
-            const bgm = document.getElementById('bgm-audio');
-            if (bgm && bgm.paused) bgm.play().catch(()=>{});
-        });
+    if (skipBtn) skipBtn.addEventListener('click', triggerNext);
+    if (video) video.addEventListener('ended', triggerNext);
+}
+
+function transitionToYouTubeFinale() {
+    const videoSection = document.getElementById('video-finale-section');
+    const youtubeSection = document.getElementById('youtube-finale-section');
+    const video = document.getElementById('finale-video');
+    const youtubeIframe = document.getElementById('youtube-iframe');
+
+    if (video) video.pause();
+    if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+
+    // Ensure BGM is paused if not already
+    pauseBGM();
+
+    videoSection.style.opacity = '0';
+    videoSection.style.transition = 'opacity 0.8s ease';
+
+    setTimeout(() => {
+        videoSection.classList.add('hidden');
+        youtubeSection.classList.remove('hidden');
+        youtubeSection.style.opacity = '0';
+        youtubeSection.getBoundingClientRect();
+        youtubeSection.style.transition = 'opacity 1s ease';
+        youtubeSection.style.opacity = '1';
+
+        // Auto-play YouTube if possible (requires interaction, which we have)
+        if (youtubeIframe) {
+            const src = youtubeIframe.src;
+            if (!src.includes('autoplay=1')) {
+                youtubeIframe.src = src + '&autoplay=1';
+            }
+        }
+    }, 850);
+
+    // Handle close button for YouTube
+    const closeBtn = document.getElementById('youtube-skip-btn');
+    if (closeBtn) {
+        closeBtn.onclick = () => {
+            youtubeSection.style.opacity = '0';
+            setTimeout(() => {
+                youtubeSection.classList.add('hidden');
+                resumeBGM();
+            }, 1000);
+        };
     }
 }
 
@@ -1494,6 +1492,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 500);
     }
 });
+
+// Global BGM Helpers
+function pauseBGM() {
+    const bgm = document.getElementById('bgm-audio');
+    if (bgm && !bgm.paused) {
+        bgm.pause();
+        bgm.dataset.wasPlaying = 'true';
+    }
+}
+
+function resumeBGM() {
+    const bgm = document.getElementById('bgm-audio');
+    if (bgm && bgm.dataset.wasPlaying === 'true') {
+        bgm.play().catch(() => { });
+        bgm.dataset.wasPlaying = 'false';
+    }
+}
 
 // Global reliable 'playMeow' override
 window.playMeow = function() {
