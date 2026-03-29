@@ -591,24 +591,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const finalBtn = document.getElementById('final-btn');
 
     finalBtn.addEventListener('click', () => {
-        finalBtn.style.opacity = '0';
         finalBtn.style.pointerEvents = 'none';
         
         // Pause all other audio
         pauseBGM();
-        
-        playMeow();
+        if (typeof playMeow === 'function') playMeow();
 
-        // Target video for fullscreen directly on user click
-        const video = document.getElementById('finale-video');
-        if (video) {
-            if (video.requestFullscreen)           video.requestFullscreen();
-            else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen();
-            else if (video.webkitEnterFullscreen)   video.webkitEnterFullscreen();
-        }
+        // Redirect directly to YouTube in a new tab
+        window.open('https://youtu.be/_u6Cdzs1rI4?si=DhZipkiQV1OOsM2c', '_blank');
 
+        // Transition to the final Thank You screen on the current page
         setTimeout(() => {
-            finalBtn.classList.add('hidden');
             showCinematicVideo();
         }, 600);
     });
@@ -1299,26 +1292,9 @@ function transitionToYouTubeFinale() {
         youtubeSection.style.transition = 'opacity 1s ease';
         youtubeSection.style.opacity = '1';
 
-        // Auto-play YouTube if possible (requires interaction, which we have)
-        if (youtubeIframe) {
-            const src = youtubeIframe.src;
-            if (!src.includes('autoplay=1')) {
-                youtubeIframe.src = src + '&autoplay=1';
-            }
-        }
+        // Try to open it automatically (might be blocked by browser)
+        window.open('https://youtu.be/_u6Cdzs1rI4?si=DhZipkiQV1OOsM2c', '_blank');
     }, 850);
-
-    // Handle close button for YouTube
-    const closeBtn = document.getElementById('youtube-skip-btn');
-    if (closeBtn) {
-        closeBtn.onclick = () => {
-            youtubeSection.style.opacity = '0';
-            setTimeout(() => {
-                youtubeSection.classList.add('hidden');
-                resumeBGM();
-            }, 1000);
-        };
-    }
 }
 
 // --- SECTION 5.6.1: Reasons I Love You Jar ---
